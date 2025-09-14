@@ -14,7 +14,8 @@ st.title("FinGenie — Your Personal Finance Assistant")
 st.divider()
 
 if "balance" not in st.session_state:
-    st.session_state.balance = account.getBalance()  # Fetch from database
+    st.session_state.balance = account.getBalance()  
+    # Fetch from database
 
 formatted_balance = f"₹{st.session_state.balance:.2f}"
 st.write(f"Current Balance: {formatted_balance}")
