@@ -19,8 +19,7 @@ pip-wheel-metadata/
 # Bytecode
 *.pyc
 
-# Streamlit
-.streamlit/config.toml
+
 
 # Databases
 *.db
