@@ -19,8 +19,6 @@ pip-wheel-metadata/
 # Bytecode
 *.pyc
 
-
-
 # Databases
 *.db
 
