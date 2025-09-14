@@ -11,7 +11,7 @@ user_email = st.session_state.user_email
 
 st.title("Write Note")
 
-# Connect to the database
+# Connect to the SQLite database
 conn = sqlite3.connect("notes.db")
 c = conn.cursor()
 
@@ -26,14 +26,14 @@ c.execute("""
 """)
 conn.commit()
 
-# Add 'edited' column if it's missing (helpful for tracking changes)
+# Add 'edited' column if it's missing
 try:
     c.execute("ALTER TABLE notes ADD COLUMN edited BOOLEAN DEFAULT 0")
     conn.commit()
 except sqlite3.OperationalError:
-    pass  # Column already exists, no problem
+    pass  # Already added before
 
-# Input for new note
+# Input box to write a new note
 note_text = st.text_area("Write your note here:")
 
 if st.button("Save Note"):
@@ -45,25 +45,29 @@ if st.button("Save Note"):
     else:
         st.error("Note is empty!")
 
-# Show existing notes
+# Fetch and display saved notes
 st.subheader("Your saved notes")
 c.execute("SELECT id, note, timestamp, edited FROM notes WHERE user_email = ? ORDER BY timestamp DESC", (user_email,))
 rows = c.fetchall()
 
 if rows:
     for note_id, note, timestamp, edited in rows:
-        # Format the timestamp nicely
+        # Format the timestamp to look clean
         try:
             formatted_time = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f").strftime("%b %d, %Y at %I:%M %p")
         except ValueError:
             formatted_time = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S").strftime("%b %d, %Y at %I:%M %p")
 
+        # Show each note in an expandable box
         with st.expander(f"{formatted_time} {'(edited)' if edited else ''}"):
-            edited_note = st.text_area(f"Edit Note #{note_id}", note, key=f"edit_{note_id}")
-            
-            col1, col2 = st.columns([1, 1])
-            with col1:
-                if st.button("Update", key=f"update_{note_id}"):
+            with st.form(f"form_{note_id}"):
+                edited_note = st.text_area("Edit note:", note, key=f"edit_{note_id}")
+
+                col1, col2 = st.columns([1, 1])
+                update_clicked = col1.form_submit_button("Update")
+                delete_clicked = col2.form_submit_button("Delete")
+
+                if update_clicked:
                     if edited_note.strip():
                         c.execute(
                             "UPDATE notes SET note = ?, timestamp = ?, edited = 1 WHERE id = ?",
@@ -74,8 +78,8 @@ if rows:
                         st.rerun()
                     else:
                         st.error("Note cannot be empty.")
-            with col2:
-                if st.button("Delete", key=f"delete_{note_id}"):
+
+                if delete_clicked:
                     c.execute("DELETE FROM notes WHERE id = ?", (note_id,))
                     conn.commit()
                     st.warning("Note deleted.")
@@ -83,4 +87,5 @@ if rows:
 else:
     st.info("No notes found.")
 
+# Close the database connection
 conn.close()
