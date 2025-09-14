@@ -3,9 +3,9 @@ import pandas as pd
 import plotly.express as px
 import os
 from dotenv import load_dotenv
-
+import cohere
 from utils.expenseTracker import Account  
-
+from utils.fingenie_ai_bot import get_budget_insights
 
 
 
@@ -87,3 +87,73 @@ if not expenses_df.empty and not income_df.empty:
     fig_stacked_bar = px.bar(stacked_data, x="month", y="amount", color="Type", barmode="stack", title="Stacked Income vs Expenses")
     st.plotly_chart(fig_stacked_bar)
 
+with st.sidebar:
+    st.markdown(
+        """
+        <style>
+        .chatbot-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .chatbot-icon {
+            background-color: #1f77b4;
+            color: white;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        .chatbot-name {
+            background-color: white;
+            color: #333;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        </style>
+        <div class="chatbot-container" onclick="document.getElementById('chat_expander').click();">
+            <div class="chatbot-icon">AI</div>
+            <div class="chatbot-name">FinGenie AI Bot</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    with st.expander("Chat with FinGenie AI Bot", ):
+        st.write(f"Hello {st.session_state.user_email.split('@')[0]}, how can FinGenie AI assist you today?")
+
+        user_query = st.text_input("Enter your question:")
+
+        if st.button("Send"):
+            if user_query.strip():
+                transactions_text = account.format_transactions_for_ai()
+                budget_tip = get_budget_insights(user_query, transactions_text)
+                st.markdown(
+                    f"""
+                    <div style="
+                        white-space: pre-wrap; 
+                        word-break: break-word; 
+                        background-color: #f9f9f9; 
+                        padding: 15px; 
+                        border-radius: 10px; 
+                        font-size: 16px; 
+                        line-height: 1.5;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                    ">
+                        {budget_tip}
+                    </div>
+                    """, 
+                    unsafe_allow_html=True
+                )
+            else: 
+                st.warning("Please enter a valid question.")

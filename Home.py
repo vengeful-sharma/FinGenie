@@ -1,11 +1,10 @@
 import streamlit as st
 import sqlite3
 import time
-from utils.expenseTracker import ExpenseManager
-
+from utils.expenseTracker import ExpenseManager, IncomeManager, Account
 from auth import AuthManager
 
-
+# ---------------------------
 # Page configuration
 # ---------------------------
 st.set_page_config(page_title="FinGenie — Personal Finance Assistant", layout="centered")
