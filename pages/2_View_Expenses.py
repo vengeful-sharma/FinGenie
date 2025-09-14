@@ -37,7 +37,8 @@ with st.expander("Add New Expense"):
             st.session_state.balance -= exAmount  # Deduct from balance
             st.toast("Expense added successfully.")
             time.sleep(1.5)
-            st.experimental_rerun()
+            st.rerun()
+
 
 st.markdown("---")
 
