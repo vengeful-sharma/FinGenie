@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+.venv/
+venv/
+ENV/
+env/
+pip-wheel-metadata/
+
+# Bytecode
+*.pyc
+
+# Streamlit
+.streamlit/config.toml
+
+# Databases
+*.db
+
+# VSCode / DevContainer
+.vscode/
+.devcontainer/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+
+
+# Images
+Img/*.PNG
