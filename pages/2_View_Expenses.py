@@ -1,60 +1,52 @@
 import streamlit as st
 from utils.expenseTracker import Account  
-import time  
+import time
 
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
-    st.warning("Please log in to continue with FinGenie.")
+    st.warning("Please log in see your expenses")
     st.stop()
 
 user_email = st.session_state.user_email
 db_name = f"{user_email}.db"  
+
 account = Account(db_name=db_name)
 
-st.title("FinGenie — Your Personal Finance Assistant")
+st.title("Your Transactions 🧾")
 st.divider()
 
-if "balance" not in st.session_state:
-    st.session_state.balance = account.getBalance()  
-    # Fetch from database
+# Expenses Section
+st.subheader("View Expenses")
+expenses_df = account.expenseList()
+if expenses_df.empty:
+    st.caption("No expenses to show ＞︿＜")
+else:
+    st.dataframe(expenses_df)
 
-formatted_balance = f"₹{st.session_state.balance:.2f}"
-st.write(f"Current Balance: {formatted_balance}")
+if not expenses_df.empty:
+    with st.expander("Delete Expense"):
+        with st.form("delete_expense_form"):
+            expense_id = st.number_input("Expense ID to Delete", min_value=0, step=1)
+            if st.form_submit_button("🗑️Delete"):
+                account.deleteExpense(expense_id)
+                st.toast("✅ Expense Deleted Successfully!")
+                time.sleep(1.5)
+                st.rerun()
 
-st.markdown("---")  # Divider line for visual separation
+# Income Section
+st.subheader("View Income")
+income_df = account.incomeList()
+if income_df.empty:
+    st.caption("No incomes to show ＞︿＜")
+else:
+    st.dataframe(income_df)
 
-# Add Expense
-with st.expander("Add New Expense"):
-    with st.form("expense_form"):
-        exName = st.text_input("Expense Title")
-        exDate = st.date_input("Date of Expense")
-        exAmount = st.number_input("Amount Spent", min_value=0.0)
-        exDes = st.text_area("Description")
-        exCategory = st.selectbox("Expense Category", ("-", "Food", "Personal", "Transport", "Investment"))
-        submit_expense = st.form_submit_button("Add Expense")
-       
-        if submit_expense:
-            account.addExpense(exDate, exName, exAmount, exCategory, exDes)
-            st.session_state.balance -= exAmount  # Deduct from balance
-            st.toast("Expense added successfully.")
-            time.sleep(1.5)
-            st.rerun()
-
-
-st.markdown("---")
-
-# Add Income
-with st.expander("Add New Income"):
-    with st.form("income_form"):
-        InName = st.text_input("Income Title")
-        InDate = st.date_input("Income Date")
-        InAmount = st.number_input("Amount Received", min_value=0.0)
-        InDes = st.text_area("Description")
-        InSource = st.selectbox("Source of Income", ("-", "Salary", "Family", "Investment", "Other"))
-        submit_income = st.form_submit_button("Add Income")
-       
-        if submit_income:
-            account.addIncome(InDate, InName, InAmount, InSource, InDes)
-            st.session_state.balance += InAmount  # Add to balance
-            st.toast("Income added successfully.")
-            time.sleep(1.5)
-            st.experimental_rerun()
+# Delete Income
+if not income_df.empty:
+    with st.expander("Delete Income"):
+        with st.form("delete_income_form"):
+            income_id = st.number_input("Income ID to Delete", min_value=0, step=1)
+            if st.form_submit_button("🗑️ Delete"):
+                account.deleteIncome(income_id)
+                st.toast("✅ Income Deleted Successfully!")
+                time.sleep(1.5)
+                st.rerun()
